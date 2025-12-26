@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CanvasFlow - Persistent Drawing</title>
+    <meta name="description" content="A simple, elegant drawing application that saves your work.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>CanvasFlow</h1>
+            <div class="controls">
+                <div class="control-group">
+                    <label for="colorPicker">Color</label>
+                    <input type="color" id="colorPicker" value="#000000">
+                </div>
+                <div class="control-group">
+                    <label for="brushSize">Size</label>
+                    <input type="range" id="brushSize" min="1" max="50" value="5">
+                </div>
+                <button id="clearBtn" class="btn btn-danger">Clear Canvas</button>
+            </div>
+        </header>
+        <main>
+            <canvas id="drawingCanvas"></canvas>
+        </main>
+        <footer>
+            <p>Drawings are automatically saved to your browser.</p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

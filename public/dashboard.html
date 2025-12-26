@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Monitor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body style="padding: 2rem; overflow: auto;">
+    <header style="border-bottom: none; justify-content: flex-start; gap: 2rem;">
+        <h1>App Monitor</h1>
+        <a href="/" class="btn" style="background: rgba(255,255,255,0.1); text-decoration: none; color: white;">Back to
+            App</a>
+    </header>
+    <main style="padding: 2rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <!-- Status Card -->
+            <div
+                style="background: var(--panel-bg); padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid rgba(255,255,255,0.05);">
+                <h3 style="margin-top: 0; font-size: 1rem; color: #94a3b8;">Status</h3>
+                <div id="status" style="font-size: 1.5rem; font-weight: 600; color: #4ade80">Checking...</div>
+                <div id="uptime" style="margin-top: 0.5rem; font-family: monospace;">0s uptime</div>
+            </div>
+
+            <!-- Memory Card -->
+            <div
+                style="background: var(--panel-bg); padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid rgba(255,255,255,0.05);">
+                <h3 style="margin-top: 0; font-size: 1rem; color: #94a3b8;">Memory Usage</h3>
+                <div id="mem-percent" style="font-size: 1.5rem; font-weight: 600; color: #38bdf8">0%</div>
+                <div id="mem-details" style="margin-top: 0.5rem; font-size: 0.8rem; color: #cbd5e1;">- / - GB</div>
+            </div>
+
+            <!-- CPU Card -->
+            <div
+                style="background: var(--panel-bg); padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid rgba(255,255,255,0.05);">
+                <h3 style="margin-top: 0; font-size: 1rem; color: #94a3b8;">CPU Load</h3>
+                <div id="cpu-load" style="font-size: 1.5rem; font-weight: 600; color: #f472b6">0</div>
+                <div id="cpu-details" style="margin-top: 0.5rem; font-size: 0.8rem; color: #cbd5e1;">- Cores</div>
+            </div>
+        </div>
+
+        <!-- Logs Section -->
+        <div
+            style="background: var(--panel-bg); padding: 1.5rem; border-radius: var(--border-radius); border: 1px solid rgba(255,255,255,0.05); flex: 1;">
+            <h3 style="margin-top: 0;">Server Logs (Live)</h3>
+            <div id="logs"
+                style="font-family: monospace; background: #0f172a; padding: 1rem; border-radius: 8px; height: 300px; overflow-y: auto; color: #e2e8f0; font-size: 0.9rem; white-space: pre-wrap; border: 1px solid #334155;">
+                Loading logs...
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        async function checkHealth() {
+            try {
+                const res = await fetch('/health');
+                const data = await res.json();
+
+                // Status
+                document.getElementById('status').textContent = data.status;
+                document.getElementById('status').style.color = data.status === 'OK' ? '#4ade80' : '#ef4444';
+
+                const uptime = Math.floor(data.uptime);
+                const h = Math.floor(uptime / 3600);
+                const m = Math.floor((uptime % 3600) / 60);
+                const s = uptime % 60;
+                document.getElementById('uptime').textContent = `${h}h ${m}m ${s}s uptime`;
+
+                // Memory
+                if (data.system && data.system.memory) {
+                    document.getElementById('mem-percent').textContent = data.system.memory.percent + '%';
+                    document.getElementById('mem-details').textContent =
+                        `${formatBytes(data.system.memory.used)} / ${formatBytes(data.system.memory.total)}`;
+                }
+
+                // CPU
+                if (data.system && data.system.cpu) {
+                    document.getElementById('cpu-load').textContent = data.system.cpu.load ? data.system.cpu.load.toFixed(2) : 'N/A';
+                    document.getElementById('cpu-details').textContent = `${data.system.cpu.count} Cores (${data.system.platform})`;
+                }
+
+                // Logs
+                if (data.logs) {
+                    const logsDiv = document.getElementById('logs');
+                    const logsHtml = data.logs.join('\n');
+                    if (logsDiv.textContent !== logsHtml) {
+                        logsDiv.textContent = logsHtml;
+                    }
+                }
+
+            } catch (e) {
+                document.getElementById('status').textContent = 'OFFLINE';
+                document.getElementById('status').style.color = '#ef4444';
+                console.error(e);
+            }
+        }
+
+        setInterval(checkHealth, 2000);
+        checkHealth();
+    </script>
+</body>
+
+</html>
